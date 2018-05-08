@@ -82,8 +82,14 @@ void process(int sd) {
                 data_sd = establish_data_port(buff, cur_mode);
             }
             if (cmd == "passive") {
-                cur_mode = PASSIVE;
-                cout << "Passive mode on.\n";
+                if (cur_mode == ACTIVE) {
+                    cur_mode = PASSIVE;
+                    cout << "Passive mode on.\n";
+                }
+                else {
+                    cur_mode = ACTIVE;
+                    cout << "Passive mode off.\n";
+                }
             }
             else {
                 send(sd, (server_commands[cmd] + "\r\n").c_str());

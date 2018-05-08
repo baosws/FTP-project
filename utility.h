@@ -24,7 +24,8 @@ std::map<std::string, std::string> server_commands = {{"ls", "LIST"},
                            {"passive", "PASV"},
                            {"get", "RETR"},
                            {"pwd", "PWD"},
-                           {"bye", "QUIT"}
+                           {"bye", "QUIT"},
+                           {"quit", "QUIT"}
                           };
 std::set<std::string> data_commands = {"ls", "dir", "get", "put"};
 // utils functions
