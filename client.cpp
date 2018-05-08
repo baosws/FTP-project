@@ -94,7 +94,7 @@ void process(int sd) {
             else {
                 send(sd, (server_commands[cmd] + "\r\n").c_str());
                 cout << recv(sd, buff);
-                if (get_return_code(buff) == 221) {
+                if (cmd == "bye") {
                     break;
                 }
                 if (data_commands.find(cmd) != data_commands.end()) {

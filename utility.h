@@ -18,7 +18,7 @@
 #include <set>
 #define MAX_BUFF (1 << 16)
 
-std::map<std::string, std::string> server_commands = {{"ls", "LIST"},
+std::map<std::string, std::string> server_commands = {{"ls", "NLST"},
                            {"dir", "LIST"},
                            {"cd", "CWD"},
                            {"passive", "PASV"},
