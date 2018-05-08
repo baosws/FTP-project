@@ -16,6 +16,8 @@
 #include <sstream>
 #include <vector>
 #include <set>
+#include <stdlib.h>
+#include <time.h>
 #define MAX_BUFF (1 << 16)
 
 std::map<std::string, std::string> server_commands = {{"ls", "NLST"},
