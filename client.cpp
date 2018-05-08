@@ -74,11 +74,13 @@ void process(int sd) {
         string cmd = args[0];
         
         if (server_commands.find(cmd) != server_commands.end()) {
-            if (cur_mode == PASSIVE) {
-                send(sd, "PASV\r\n");
-                cout << recv(sd, buff);
+            if (data_commands.find(cmd) != data_commands.end()) {
+                if (cur_mode == PASSIVE) {
+                    send(sd, "PASV\r\n");
+                    cout << recv(sd, buff);
+                }
+                data_sd = establish_data_port(buff, cur_mode);
             }
-            data_sd = establish_data_port(buff, cur_mode);
             if (cmd == "passive") {
                 cur_mode = PASSIVE;
                 cout << "Passive mode on.\n";
@@ -86,8 +88,13 @@ void process(int sd) {
             else {
                 send(sd, (server_commands[cmd] + "\r\n").c_str());
                 cout << recv(sd, buff);
-                cout << recv(data_sd, buff);
-                cout << recv(sd, buff);
+                if (get_return_code(buff) == 221) {
+                    break;
+                }
+                if (data_commands.find(cmd) != data_commands.end()) {
+                    cout << recv(data_sd, buff);
+                    cout << recv(sd, buff);
+                }
             }
         }
     }

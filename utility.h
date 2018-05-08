@@ -15,15 +15,18 @@
 #include <memory>
 #include <sstream>
 #include <vector>
+#include <set>
 #define MAX_BUFF (1 << 16)
 
-std::map<std::string, std::string> server_commands = {{"ls", "LIST\r\n"},
+std::map<std::string, std::string> server_commands = {{"ls", "LIST"},
                            {"dir", "LIST"},
                            {"cd", "CWD"},
                            {"passive", "PASV"},
-                           {"get", "RETR"}
+                           {"get", "RETR"},
+                           {"pwd", "PWD"},
+                           {"bye", "QUIT"}
                           };
-
+std::set<std::string> data_commands = {"ls", "dir", "get", "put"};
 // utils functions
 int send(int sd, const char* msg) {
     return write(sd, msg, strlen(msg));
