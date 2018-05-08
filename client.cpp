@@ -24,7 +24,7 @@ void login(int sd) {
     char buff[MAX_BUFF];
     cout << "> Username: ";
     readline(buff);
-    strcpy(buff, ("USER " + string(buff)).c_str());
+    strcpy(buff, ("USER " + string(buff) + "\r\n").c_str());
     write(sd, buff, strlen(buff));
     
     cout << recv(sd, buff);
@@ -34,7 +34,7 @@ void login(int sd) {
     else {
         cout << "> Password: ";
         readline(buff);
-        send(sd, ("PASS " + string(buff)).c_str());
+        send(sd, ("PASS " + string(buff) + "\r\n").c_str());
         memset(buff, 0, MAX_BUFF);
         cout << recv(sd, buff);
         if (int ret_code = get_return_code(buff); ret_code != 230) {
@@ -74,7 +74,7 @@ void process(int sd) {
         vector<string> args = parse_args(buff);
         string cmd = args[0];
         
-        if (CMD.find(cmd) != CMD.end()) {
+        if (server_commands.find(cmd) != server_commands.end()) {
             if (cur_mode == PASSIVE) {
                 send(sd, "PASV\r\n");
                 cout << recv(sd, buff);
@@ -85,7 +85,7 @@ void process(int sd) {
                 cout << "Passive mode on.\n";
             }
             else {
-                send(sd, CMD[cmd].c_str());
+                send(sd, (server_commands[cmd] + "\r\n").c_str());
                 cout << recv(sd, buff);
                 cout << recv(data_sd, buff);
                 cout << recv(sd, buff);

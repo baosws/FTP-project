@@ -52,9 +52,6 @@ void readline(char* buff, int len = MAX_BUFF, FILE* stream = stdin) {
     int n = strlen(buff);
     while (buff[n - 1] == '\r' || buff[n - 1] == '\n')
         buff[--n] = 0;
-    buff[n++] = '\r';
-    buff[n++] = '\n';
-    buff[n] = 0;
 }
 
 std::vector<std::string> parse_args(char const* args) {
