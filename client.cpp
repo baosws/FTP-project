@@ -13,7 +13,7 @@ int connect(char* server_ip, unsigned short port) {
     server.sin_family = AF_INET;
     server.sin_port = htons(port);
     server.sin_addr.s_addr = inet_addr(server_ip);
-    if (int k = connect(server_sd, (sockaddr*)&server, sizeof(server)); k == -1) {
+    if (connect(server_sd, (sockaddr*)&server, sizeof(server)) == -1) {
         throw "Connection error";
     }
     return server_sd;
@@ -24,11 +24,10 @@ void login(int sd) {
     char buff[MAX_BUFF];
     cout << "> Username: ";
     readline(buff);
-    strcpy(buff, ("USER " + string(buff) + "\r\n").c_str());
-    write(sd, buff, strlen(buff));
+    send(sd, ("USER " + string(buff) + "\r\n").c_str());
     
     cout << recv(sd, buff);
-    if (int ret_code = get_return_code(buff); ret_code != 331) {
+    if (get_return_code(buff) != 331) {
         throw "Login failed.";
     }
     else {
@@ -37,7 +36,7 @@ void login(int sd) {
         send(sd, ("PASS " + string(buff) + "\r\n").c_str());
         memset(buff, 0, MAX_BUFF);
         cout << recv(sd, buff);
-        if (int ret_code = get_return_code(buff); ret_code != 230) {
+        if (get_return_code(buff) != 230) {
             throw "Login failed.";
         }
     }
@@ -105,7 +104,7 @@ int main(int nargs, char* args[]) {
         char buff[MAX_BUFF];
         cout << recv(server_sd, buff);
         
-        if (int ret_code = get_return_code(buff); ret_code != 220) {
+        if (get_return_code(buff) != 220) {
             throw "Connection refused";
         }
         else {
