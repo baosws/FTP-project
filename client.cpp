@@ -1,6 +1,29 @@
 #include "utility.h"
 using namespace std;
 
+// login vào server
+void login(int sd) {
+    char buff[MAX_BUFF];
+    cout << "> Username: ";
+    readline(buff);
+    send(sd, ("USER " + string(buff) + "\r\n").c_str());
+
+    cout << recv(sd, buff);
+    if (get_return_code(buff) != 331) {
+        throw "Login failed.";
+    }
+    else {
+        cout << "> Password: ";
+        readline(buff);
+        send(sd, ("PASS " + string(buff) + "\r\n").c_str());
+        memset(buff, 0, MAX_BUFF);
+        cout << recv(sd, buff);
+        if (get_return_code(buff) != 230) {
+            throw "Login failed.";
+        }
+    }
+}
+
 // tạo socket kết nối tới server $server_ip, port $port
 int connect_server(unsigned int server_ip, unsigned short port) {
     int server_sd = socket(AF_INET, SOCK_STREAM, 0);
@@ -18,47 +41,25 @@ int connect_server(unsigned int server_ip, unsigned short port) {
     }
     return server_sd;
 }
-int client_listen(unsigned short port, sockaddr_in* client, socklen_t len) {
+int client_listen(unsigned short port) {
     int client_sd = socket(AF_INET, SOCK_STREAM, 0);
     if (client_sd < 0) {
         throw "Socket creation failed";
     }
-    memset((void*)client, 0, len);
-    client->sin_family = AF_INET;
-    client->sin_addr.s_addr = INADDR_ANY;
-    client->sin_port = htons(port);
-    if (bind(client_sd, (sockaddr*)client, len) == -1) {
+    sockaddr_in client;
+    memset((void*)&client, 0, sizeof(client));
+    client.sin_family = AF_INET;
+    client.sin_addr.s_addr = INADDR_ANY;
+    client.sin_port = (port);
+    if (bind(client_sd, (sockaddr*)&client, sizeof(client)) == -1) {
         close(client_sd);
         throw "Binding failed";
     }
-    if (listen(client_sd, 1) == -1) {
+    if (listen(client_sd, 5) == -1) {
         close(client_sd);
         throw "Listening failed";
     }
     return client_sd;
-}
-
-// login vào server
-void login(int sd) {
-    char buff[MAX_BUFF];
-    cout << "> Username: ";
-    readline(buff);
-    send(sd, ("USER " + string(buff) + "\r\n").c_str());
-    
-    cout << recv(sd, buff);
-    if (get_return_code(buff) != 331) {
-        throw "Login failed.";
-    }
-    else {
-        cout << "> Password: ";
-        readline(buff);
-        send(sd, ("PASS " + string(buff) + "\r\n").c_str());
-        memset(buff, 0, MAX_BUFF);
-        cout << recv(sd, buff);
-        if (get_return_code(buff) != 230) {
-            throw "Login failed.";
-        }
-    }
 }
 
 #define ACTIVE 0
@@ -90,10 +91,10 @@ int establish_data_port(int sd, int mode) {
         unsigned char* p = (unsigned char*)&port;
         srand(time(NULL));
         while (1) {
-            int server_sd;
+            int client_sd;
             try {
                 port = rand() & ((1 << 16) - 1);
-                server_sd = client_listen(port, &addr, len);
+                client_sd = client_listen(port);
             }
             catch (char const* ex) {
                 continue;
@@ -103,7 +104,9 @@ int establish_data_port(int sd, int mode) {
             send(sd, buff);
             cout << recv(sd, buff);
             len = sizeof(addr);
-            return accept(server_sd, (sockaddr*)&addr, &len);
+            int sd = accept(client_sd, (sockaddr*)&addr, &len);
+            cout << "data port: " << sd << endl;
+            return sd;
         }
     }
 }

@@ -20,15 +20,16 @@
 #include <time.h>
 #define MAX_BUFF (1 << 16)
 
-std::map<std::string, std::string> server_commands = {{"ls", "NLST"},
-                           {"dir", "LIST"},
-                           {"cd", "CWD"},
-                           {"passive", "PASV"},
-                           {"get", "RETR"},
-                           {"pwd", "PWD"},
-                           {"bye", "QUIT"},
-                           {"quit", "QUIT"}
-                          };
+std::map<std::string, std::string> server_commands =
+{{"ls", "NLST"},
+{"dir", "LIST"},
+{"cd", "CWD"},
+{"passive", "PASV"},
+{"get", "RETR"},
+{"pwd", "PWD"},
+{"bye", "QUIT"},
+{"quit", "QUIT"}
+};
 std::set<std::string> data_commands = {"ls", "dir", "get", "put"};
 // utils functions
 int send(int sd, const char* msg) {
