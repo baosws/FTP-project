@@ -1,10 +1,10 @@
 # FTP-project
 
 ## Compile:
-g++ client.cpp -o client
+g++ -std=c++11 client.cpp -o client
 
 ## Run:
 ./client 192.123.456.789
 
 ## For short:
-g++ client.cpp -o client && ./client 192.123.456.789
+g++ -std=c++11 client.cpp -o client && ./client 192.123.456.789
