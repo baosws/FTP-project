@@ -5,9 +5,8 @@ using namespace std;
 void login(int sd) {
     char buff[MAX_BUFF];
     cout << "> Username: ";
-//     readline(buff);
-//     send(sd, ("USER " + string(buff) + "\r\n").c_str());
-    send(sd, "USER duongbao\r\n");
+    readline(buff);
+    send(sd, ("USER " + string(buff) + "\r\n").c_str());
 
     cout << recv(sd, buff);
     if (get_return_code(buff) != 331) {
@@ -15,9 +14,8 @@ void login(int sd) {
     }
     else {
         cout << "> Password: ";
-//         readline(buff);
-//         send(sd, ("PASS " + string(buff) + "\r\n").c_str());
-        send(sd, "PASS mothaiba0\r\n");
+        readline(buff);
+        send(sd, ("PASS " + string(buff) + "\r\n").c_str());
         memset(buff, 0, MAX_BUFF);
         cout << recv(sd, buff);
         if (get_return_code(buff) != 230) {
