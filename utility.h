@@ -18,6 +18,8 @@
 #include <set>
 #include <stdlib.h>
 #include <time.h>
+#include <thread>
+
 #define MAX_BUFF (1 << 16)
 
 std::map<std::string, std::string> server_commands =
@@ -35,9 +37,14 @@ std::set<std::string> data_commands = {"ls", "dir", "get", "put"};
 int send(int sd, const char* msg) {
     return write(sd, msg, strlen(msg));
 }
-char* recv(int sd, char* buff, int len = MAX_BUFF) {
+char* recv(int sd, char* buff, int* cnt = NULL, int len = MAX_BUFF) {
     memset(buff, 0, len);
-    read(sd, buff, len);
+    if (cnt != NULL) {
+        *cnt = read(sd, buff, len);
+    }
+    else {
+        read(sd, buff, len);
+    }
     return buff;
 }
 
