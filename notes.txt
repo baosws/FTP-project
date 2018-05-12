@@ -1,0 +1,17 @@
+- Mỗi socket được đinh danh bởi một "socket descriptor" (sd) = một số int.
+- Hàm send(int sd, char* data): gửi chuỗi [data] qua socket [sd].
+- Hàm recv(int sd, char* data, int* cnt = NULL, int len = MAX_BUFF): đọc chuỗi từ socket [sd], lưu vào chuỗi [data] tối đa [len] ký tự. [*cnt] là số ký tự đọc được nếu có, [*cnt] = -1 nếu đọc lỗi.
+
+
+Nhựt:
+- void get(int sd, char* filename): tải file từ socket sd về máy client.
+    + Tạo filehandle (cái này cũng y như socket descriptor): https://en.wikipedia.org/wiki/File_descriptor
+    + Đọc data từ socket sd.
+    + Lưu data vào file sử dụng filehandle.
+- void put(int sd, char* filename): tải file qua socket sd.
+    + Tạo filehandle.
+    + Gừi file qua socket: dùng lệnh sendfile: http://man7.org/linux/man-pages/man2/sendfile.2.html
+- void mget(int sd, char* filename[]): gọi lại hàm get nhiều lần.
+- void mput(int sd, char* filename[]): gọi lại hàm put nhiều lần.
+Tham khảo cái này: http://armi.in/wiki/FTP_Server_and_Client_Implementation_in_C/C%2B%2B
+Note: file có thể bự, phải gửi/nhận nhiều lần.

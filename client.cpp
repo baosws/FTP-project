@@ -49,7 +49,7 @@ int client_listen(unsigned short& port) {
     sockaddr_in client;
     memset((void*)&client, 0, sizeof(client));
     client.sin_family = AF_INET;
-    client.sin_addr.s_addr =  INADDR_ANY; // (inet_addr("192.168.56.1"));
+    client.sin_addr.s_addr =  INADDR_ANY;
     client.sin_port = htons(0);
     if (bind(client_sd, (sockaddr*)&client, sizeof(client)) == -1) {
         close(client_sd);
@@ -61,7 +61,6 @@ int client_listen(unsigned short& port) {
     }
     socklen_t len = sizeof(client);
     getsockname(client_sd, (sockaddr*)&client, &len);
-    cout << inet_ntoa(client.sin_addr.s_addr) << endl;
     port = ntohs(client.sin_port);
     return client_sd;
 }
