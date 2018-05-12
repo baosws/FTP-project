@@ -68,7 +68,7 @@ int client_listen(unsigned short& port) {
 #define ACTIVE 0
 #define PASSIVE 1
 // tạo port để truyền data
-int establish_data_port(int sd, int mode) {
+int establish_data_socket(int sd, int mode) {
     char buff[MAX_BUFF];
     if (mode == PASSIVE) {
         send(sd, "PASV\r\n");
@@ -101,18 +101,62 @@ int establish_data_port(int sd, int mode) {
     }
 }
 
-void process(int sd) {
+void process(int sd) { // sd là socket để gửi lệnh và nhận phản hồi
     char buff[MAX_BUFF];
     int data_sd = -1;
     int cur_mode = ACTIVE;
     while (1) {
         cout << "ftp> ";
         string cmd;
+        // đọc lệnh: ví dụ 'get abc.txt' thì cmd = "get"
         cin >> cmd;
+        // đọc tham số: 'mget abc.txt def.cpp ghi.xyz' thì buff="abc.txt def.cpp ghi.xyz"
         readline(buff);
         vector<string> args = parse_args(buff);
-        
-        if (server_commands.find(cmd) != server_commands.end()) {
+
+        // có phải lệnh liên quan đến server không? mấy lệnh này lưu trong map<string,string> server_commands trong utility.h
+        bool is_svcmd = server_commands.find(cmd) != server_commands.end();
+        // có phải lệnh trao đổi dữ liệu không? mấy cái này lưu trong set<string> data_commands trong utility.h
+        bool is_datacmd = data_commands.find(cmd) != data_commands.end();
+
+        // xử lý lệnh liên quan đến server
+        if (is_svcmd) {
+            int client_sd = -1;
+            // nếu có trao đổi data thì phải tạo socket trao đổi data
+            if (is_datacmd) {
+                client_sd = establish_data_socket(sd, cur_mode);
+            }
+
+            // sau đó gửi command sau khi đã được dịch thành lệnh chuẩn lên server, ví dụ: ls -> NLST, dir -> LIST, get -> RETR, put -> STOR,... chuyển cái này dùng map server_commands<string, string>
+            send(sd, (server_commands[cmd] + "\r\n").c_str()); // phải có \r\n ở cuối
+            cout << recv(sd, buff); // sau khi gửi xong thì nhận phản hồi và in ra stdout
+            if (cmd == "bye" || cmd == "quit") { // lệnh thoát
+                break;
+            }
+            if (is_datacmd) {
+                // tạo socket trao đổi dữ liệu. phải tạo 2 lần như vậy vì chế độ passive và active tạo hơi khác nhau.
+                if (cur_mode == ACTIVE) {
+                    sockaddr_in addr;
+                    socklen_t len = sizeof(addr);
+                    data_sd = accept(client_sd, (sockaddr*)&addr, &len);
+                }
+                else {
+                    data_sd = client_sd;
+                }
+                
+                // nhận data từ socket trao đổi dữ liệu và in ra stdout
+                cout << recv(data_sd, buff);
+                // nhận thêm xác nhận đã gửi xong data từ socket sd
+                cout << recv(sd, buff);
+
+                // đóng socket. phải đóng vì 2 cái này tạo mới mỗi lần gửi/nhận data
+                close(data_sd);
+                close(client_sd);
+            }
+        }
+        // xử lý lệnh chỉ liên quan client
+        else {
+            // nếu là lệnh passive/active thì thay đổi mode
             if (cmd == "passive") {
                 if (cur_mode == ACTIVE) {
                     cur_mode = PASSIVE;
@@ -123,32 +167,8 @@ void process(int sd) {
                     cout << "Passive mode off.\n";
                 }
             }
-            else {
-                int client_sd = -1;
-                if (data_commands.find(cmd) != data_commands.end()) {
-                    client_sd = establish_data_port(sd, cur_mode);
-                }
-                send(sd, (server_commands[cmd] + "\r\n").c_str());
-                cout << recv(sd, buff);
-                if (data_commands.find(cmd) != data_commands.end()) {
-                    if (cur_mode == ACTIVE) {
-                        sockaddr_in addr;
-                        socklen_t len = sizeof(addr);
-                        data_sd = accept(client_sd, (sockaddr*)&addr, &len);
-                    }
-                    else {
-                        data_sd = client_sd;
-                    }
-                }
-                if (cmd == "bye") {
-                    break;
-                }
-                if (data_commands.find(cmd) != data_commands.end()) {
-                    cout << recv(data_sd, buff);
-                    cout << recv(sd, buff);
-                    close(data_sd);
-                    close(client_sd);
-                }
+            else if (cmd == "lcd") {
+                // do something, use chdir()
             }
         }
     }
