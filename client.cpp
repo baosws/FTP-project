@@ -174,28 +174,35 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
     }
 }
 
-int main(int nargs, char* args[])
-try {
-    if (nargs < 2) {
-        throw string("Server missing");
+int main() {
+    int nargs = 2;
+    char args_t[MAX_BUFF];
+    char* args[2];
+    args[1] = args_t;
+    scanf("%s", args_t);
+    cout << args[1] << endl;
+    try {
+        if (nargs < 2) {
+            throw string("Server missing");
+        }
+        
+        int server_sd = connect_server(inet_addr(args[1]), 21);
+        cout << "Connected to " << args[1] << endl;
+        char buff[MAX_BUFF];
+        cout << recv(server_sd, buff);
+        
+        if (get_return_code(buff) != 220) {
+            throw string("Connection refused");
+        }
+        else {
+            login(server_sd);
+        }
+        send(server_sd, "SYST\r\n");
+        cout << recv(server_sd, buff);
+        
+        process(server_sd);
     }
-    
-    int server_sd = connect_server(inet_addr(args[1]), 21);
-    cout << "Connected to " << args[1] << endl;
-    char buff[MAX_BUFF];
-    cout << recv(server_sd, buff);
-    
-    if (get_return_code(buff) != 220) {
-        throw string("Connection refused");
+    catch (string ex) {
+        cerr << "Err: " << ex << endl;
     }
-    else {
-        login(server_sd);
-    }
-    send(server_sd, "SYST\r\n");
-    cout << recv(server_sd, buff);
-    
-    process(server_sd);
-}
-catch (string ex) {
-    cerr << "Err: " << ex << endl;
 }
