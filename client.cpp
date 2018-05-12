@@ -112,7 +112,7 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
         cin >> cmd;
         // đọc tham số: 'mget abc.txt def.cpp ghi.xyz' thì buff="abc.txt def.cpp ghi.xyz"
         readline(buff);
-        vector<string> args = parse_args(buff);
+        vector<string> args = parse_args(buff); // tách chuỗi tham số ra thành vector các tham số: "abc.txt def.cpp ghi.xyz" -> {"abc.txt", "def.cpp", "ghi.xyz"} 
 
         // có phải lệnh liên quan đến server không? mấy lệnh này lưu trong map<string,string> server_commands trong utility.h
         bool is_svcmd = server_commands.find(cmd) != server_commands.end();
