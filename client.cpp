@@ -174,13 +174,7 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
     }
 }
 
-int main() {
-    int nargs = 2;
-    char args_t[MAX_BUFF];
-    char* args[2];
-    args[1] = args_t;
-    scanf("%s", args_t);
-    cout << args[1] << endl;
+int main(int nargs, char* args[]) {
     try {
         if (nargs < 2) {
             throw string("Server missing");
