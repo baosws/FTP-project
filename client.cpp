@@ -143,11 +143,19 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
                 else {
                     data_sd = client_sd;
                 }
-                
-                // nhận data từ socket trao đổi dữ liệu và in ra stdout
-                cout << recv(data_sd, buff);
-                // nhận thêm xác nhận đã gửi xong data từ socket sd
-                cout << recv(sd, buff);
+                if (cmd == "ls" || cmd == "dir") {
+                    // nhận data từ socket trao đổi dữ liệu và in ra stdout
+                    cout << recv(data_sd, buff);
+                    // nhận thêm xác nhận đã gửi xong data từ socket sd
+                    cout << recv(sd, buff);
+                }
+                else if (cmd == "get") {
+                    // ...
+                }
+                else if (cmd == "put") {
+                    // ...
+                }
+                // else if(...)
 
                 // đóng socket. phải đóng vì 2 cái này tạo mới mỗi lần gửi/nhận data
                 close(data_sd);
