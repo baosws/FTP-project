@@ -113,7 +113,6 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
         // đọc tham số: 'mget abc.txt def.cpp ghi.xyz' thì buff="abc.txt def.cpp ghi.xyz"
         readline(buff);
         vector<string> args = parse_args(buff); // tách chuỗi tham số ra thành vector các tham số: "abc.txt def.cpp ghi.xyz" -> {"abc.txt", "def.cpp", "ghi.xyz"} 
-
         // có phải lệnh liên quan đến server không? mấy lệnh này lưu trong map<string,string> server_commands trong utility.h
         bool is_svcmd = server_commands.find(cmd) != server_commands.end();
         // có phải lệnh trao đổi dữ liệu không? mấy cái này lưu trong set<string> data_commands trong utility.h
@@ -126,9 +125,9 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
             if (is_datacmd) {
                 client_sd = establish_data_socket(sd, cur_mode);
             }
-
             // sau đó gửi command sau khi đã được dịch thành lệnh chuẩn lên server, ví dụ: ls -> NLST, dir -> LIST, get -> RETR, put -> STOR,... chuyển cái này dùng map server_commands<string, string>
-            send(sd, (server_commands[cmd] + "\r\n").c_str()); // phải có \r\n ở cuối
+            if (args[0] != "") send(sd, (server_commands[cmd] +  " " + args[0] + "\r\n").c_str()); // phải có \r\n ở cuối
+			else send(sd, (server_commands[cmd] + "\r\n").c_str());
             cout << recv(sd, buff); // sau khi gửi xong thì nhận phản hồi và in ra stdout
             if (cmd == "bye" || cmd == "quit") { // lệnh thoát
                 break;
@@ -150,7 +149,13 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
                     cout << recv(sd, buff);
                 }
                 else if (cmd == "get") {
-                    // ...
+					char f[MAX_BUFF];
+					//send(sd, (server_commands[cmd] +  " " + args[0] + "\r\n").c_str());
+					recv(data_sd, f);
+					int file_desc = open(args[0].c_str(), O_CREAT | O_EXCL | O_WRONLY, 0666);
+					write(file_desc, f, strlen(f));
+					close(file_desc);
+					cout << recv(sd, buff);
                 }
                 else if (cmd == "put") {
                     // ...
