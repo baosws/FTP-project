@@ -19,14 +19,15 @@
 #include <stdlib.h>
 #include <time.h>
 #include <thread>
+#include <fcntl.h>
+//#include <sys/sendfile.h>
 
-#define MAX_BUFF (1 << 16)
+#define MAX_BUFF (1 << 18)
 
 std::map<std::string, std::string> server_commands =
 {{"ls", "NLST"},
 {"dir", "LIST"},
 {"cd", "CWD"},
-{"passive", "PASV"},
 {"get", "RETR"},
 {"pwd", "PWD"},
 {"bye", "QUIT"},
