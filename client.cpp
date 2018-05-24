@@ -113,7 +113,6 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
         // đọc tham số: 'mget abc.txt def.cpp ghi.xyz' thì buff="abc.txt def.cpp ghi.xyz"
         readline(buff);
         vector<string> args = parse_args(buff); // tách chuỗi tham số ra thành vector các tham số: "abc.txt def.cpp ghi.xyz" -> {"abc.txt", "def.cpp", "ghi.xyz"} 
-
         // có phải lệnh liên quan đến server không? mấy lệnh này lưu trong map<string,string> server_commands trong utility.h
         bool is_svcmd = server_commands.find(cmd) != server_commands.end();
         // có phải lệnh trao đổi dữ liệu không? mấy cái này lưu trong set<string> data_commands trong utility.h
@@ -127,8 +126,14 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
                 client_sd = establish_data_socket(sd, cur_mode);
             }
 
+            // gộp các tham số lại để tạo thành string command hoàn chỉnh
+            string command_string = server_commands[cmd];
+            for (string arg: args)
+                command_string =command_string + " " + arg;
+            command_string = command_string +  + "\r\n";
+            
             // sau đó gửi command sau khi đã được dịch thành lệnh chuẩn lên server, ví dụ: ls -> NLST, dir -> LIST, get -> RETR, put -> STOR,... chuyển cái này dùng map server_commands<string, string>
-            send(sd, (server_commands[cmd] + "\r\n").c_str()); // phải có \r\n ở cuối
+            send(sd, command_string.c_str()); // phải có \r\n ở cuối
             cout << recv(sd, buff); // sau khi gửi xong thì nhận phản hồi và in ra stdout
             if (cmd == "bye" || cmd == "quit") { // lệnh thoát
                 break;
