@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <thread>
+#include <unistd.h>
 
 #define MAX_BUFF (1 << 16)
 
@@ -29,6 +30,7 @@ std::map<std::string, std::string> server_commands =
 {"mkdir","MKD"},
 {"mrdir","RMD"},
 {"delete","DELE"},
+{"mdelete",""},
 {"passive", "PASV"},
 {"get", "RETR"},
 {"pwd", "PWD"},

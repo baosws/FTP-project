@@ -126,14 +126,27 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
                 client_sd = establish_data_socket(sd, cur_mode);
             }
 
+            // Xử lý riêng lệnh mdelete
+            if (cmd=="mdelete") {
+                string answer;
+                for(string file: args) {
+                    cout<<"mdelete "<<file<<"?";
+                    cin>>answer;
+                    if (!(answer=="n" || answer=="N")) {
+                        string command_string="DELE" + file + "\r\n";
+                        send(sd, command_string.c_str());
+                        cout << recv(sd, buff);
+                    }
+                }
+            }
             // gộp các tham số lại để tạo thành string command hoàn chỉnh
             string command_string = server_commands[cmd];
             for (string arg: args)
                 command_string =command_string + " " + arg;
-            command_string = command_string +  + "\r\n";
+            command_string = command_string +  + "\r\n";// phải có \r\n ở cuối
             
             // sau đó gửi command sau khi đã được dịch thành lệnh chuẩn lên server, ví dụ: ls -> NLST, dir -> LIST, get -> RETR, put -> STOR,... chuyển cái này dùng map server_commands<string, string>
-            send(sd, command_string.c_str()); // phải có \r\n ở cuối
+            send(sd, command_string.c_str()); 
             cout << recv(sd, buff); // sau khi gửi xong thì nhận phản hồi và in ra stdout
             if (cmd == "bye" || cmd == "quit") { // lệnh thoát
                 break;
@@ -181,8 +194,18 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
                 }
             }
             else if (cmd == "lcd") {
-                // do something, use chdir()
+                if (args.size()<=1) {
+                    if (args.size()==1) {
+                        chdir(args[0].c_str());
+                    }
+                    char* cwd = get_current_dir_name();
+                    printf("Local directory now %s\n", cwd);
+                    free(cwd);
+                }
+                else
+                    cout<<"usage: lcd local-directory";
             }
+            cout<<"?Invalid command.\n";
         }
     }
 }
