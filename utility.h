@@ -20,6 +20,8 @@
 #include <time.h>
 #include <thread>
 #include <fcntl.h>
+#include <sys/uio.h>
+#include <sys/stat.h>
 //#include <sys/sendfile.h>
 
 #define MAX_BUFF (1 << 18)
@@ -29,11 +31,14 @@ std::map<std::string, std::string> server_commands =
 {"dir", "LIST"},
 {"cd", "CWD"},
 {"get", "RETR"},
+{"mget", "RETR"},
+{"put", "STOR"},
+{"mput", "STOR"},
 {"pwd", "PWD"},
 {"bye", "QUIT"},
 {"quit", "QUIT"}
 };
-std::set<std::string> data_commands = {"ls", "dir", "get", "put"};
+std::set<std::string> data_commands = {"ls", "dir", "get", "put", "mget", "mput"};
 // utils functions
 int send(int sd, const char* msg) {
     return write(sd, msg, strlen(msg));
