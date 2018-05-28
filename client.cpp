@@ -156,9 +156,11 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
                 }
                 else if (cmd == "get") {
 					char f[MAX_BUFF];
-					recv(data_sd, f);
+					memset(f, 0, MAX_BUFF);
+					int cnt = 0;
+					recv(data_sd, f, &cnt);
 					int file_desc = open(args[0].c_str(), O_CREAT | O_EXCL | O_WRONLY, 0666);
-					write(file_desc, f, strlen(f));
+					write(file_desc, f, cnt);
 					close(file_desc);
 					cout << recv(sd, buff);
                 }
@@ -170,11 +172,120 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
 						struct stat obj;
 						stat(args[0].c_str(), &obj);
 						int size = obj.st_size;
-						sendfile(data_sd, file_desc, NULL, size);
+						char f[MAX_BUFF];
+						memset(f, 0, MAX_BUFF);
+						read(file_desc, f, size);
+						write(data_sd, f, size);
+						close(file_desc);
+						close(data_sd);
+						close(client_sd);
 						cout << recv(sd, buff);
 					}
                 }
-                // else if(...)
+                else if (cmd == "mget") {
+					char f[MAX_BUFF];
+					memset(f, 0, MAX_BUFF);
+					int cnt = 0;
+					recv(data_sd, f, &cnt);
+					int file_desc = open(args[0].c_str(), O_CREAT | O_EXCL | O_WRONLY, 0666);
+					write(file_desc, f, cnt);
+					close(file_desc);
+					cout << recv(sd, buff);
+					for (int i = 1; i < args.size(); i++)
+					{
+						//đóng socket trao đổi dữ liệu trước đó
+						close(data_sd);
+						close(client_sd);
+						
+						//tạo lại socket trao đổi dữ liệu
+						client_sd = establish_data_socket(sd, cur_mode);
+						
+						//gửi command
+						send(sd, (server_commands[cmd] +  " " + args[i] + "\r\n").c_str());
+						
+						//nhận phản hồi
+						srecv = recv(sd, buff);
+						cout << srecv;
+						
+						//tạo tiếp socket trao đổi dữ liệu, phải tạo 2 lần như vậy vì chế độ passive và active tạo hơi khác nhau.
+						if (cur_mode == ACTIVE) {
+						sockaddr_in addr;
+						socklen_t len = sizeof(addr);
+						data_sd = accept(client_sd, (sockaddr*)&addr, &len);
+						}
+						else {
+							data_sd = client_sd;
+						}
+						
+						//nhận dữ liệu
+						memset(f, 0, MAX_BUFF);
+						cnt = 0;
+						recv(data_sd, f, &cnt);
+						file_desc = open(args[i].c_str(), O_CREAT | O_EXCL | O_WRONLY, 0666);
+						write(file_desc, f, cnt);
+						close(file_desc);
+						cout << recv(sd, buff);
+					}
+				}
+				else if (cmd == "mput") {
+					int file_desc = open(args[0].c_str(), O_RDONLY);
+					if (file_desc == -1) cout << "No such file on the local directory\n";
+					else
+					{
+						struct stat obj;
+						stat(args[0].c_str(), &obj);
+						int size = obj.st_size;
+						char f[MAX_BUFF];
+						memset(f, 0, MAX_BUFF);
+						read(file_desc, f, size);
+						write(data_sd, f, size);
+						close(file_desc);
+						close(data_sd);
+						close(client_sd);
+						cout << recv(sd, buff);
+					}
+					for (int i = 1; i < args.size(); i++)
+					{
+						
+						//tạo lại socket trao đổi dữ liệu
+						client_sd = establish_data_socket(sd, cur_mode);
+						
+						//gửi command
+						send(sd, (server_commands[cmd] +  " " + args[i] + "\r\n").c_str());
+						
+						//nhận phản hồi
+						srecv = recv(sd, buff);
+						cout << srecv;
+						
+						//tạo tiếp socket trao đổi dữ liệu, phải tạo 2 lần như vậy vì chế độ passive và active tạo hơi khác nhau.
+						if (cur_mode == ACTIVE) {
+						sockaddr_in addr;
+						socklen_t len = sizeof(addr);
+						data_sd = accept(client_sd, (sockaddr*)&addr, &len);
+						}
+						else {
+							data_sd = client_sd;
+						}
+						
+						//nhận dữ liệu
+						int file_desc = open(args[i].c_str(), O_RDONLY);
+						if (file_desc == -1) cout << "No such file on the local directory\n";
+						else
+						{
+							struct stat obj;
+							stat(args[i].c_str(), &obj);
+							int size = obj.st_size;
+							char f[MAX_BUFF];
+							memset(f, 0, MAX_BUFF);
+							read(file_desc, f, size);
+							write(data_sd, f, size);
+							close(file_desc);
+							close(data_sd);
+							close(client_sd);
+							cout << recv(sd, buff);
+						}
+					}
+				}
 
                 // đóng socket. phải đóng vì 2 cái này tạo mới mỗi lần gửi/nhận data
                 close(data_sd);
