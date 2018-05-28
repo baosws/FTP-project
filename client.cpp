@@ -113,7 +113,6 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
         // đọc tham số: 'mget abc.txt def.cpp ghi.xyz' thì buff="abc.txt def.cpp ghi.xyz"
         readline(buff);
         vector<string> args = parse_args(buff); // tách chuỗi tham số ra thành vector các tham số: "abc.txt def.cpp ghi.xyz" -> {"abc.txt", "def.cpp", "ghi.xyz"} 
-
         // có phải lệnh liên quan đến server không? mấy lệnh này lưu trong map<string,string> server_commands trong utility.h
         bool is_svcmd = server_commands.find(cmd) != server_commands.end();
         // có phải lệnh trao đổi dữ liệu không? mấy cái này lưu trong set<string> data_commands trong utility.h
@@ -126,10 +125,16 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
             if (is_datacmd) {
                 client_sd = establish_data_socket(sd, cur_mode);
             }
-
             // sau đó gửi command sau khi đã được dịch thành lệnh chuẩn lên server, ví dụ: ls -> NLST, dir -> LIST, get -> RETR, put -> STOR,... chuyển cái này dùng map server_commands<string, string>
-            send(sd, (server_commands[cmd] + "\r\n").c_str()); // phải có \r\n ở cuối
-            cout << recv(sd, buff); // sau khi gửi xong thì nhận phản hồi và in ra stdout
+            if (args.size() != 0) send(sd, (server_commands[cmd] +  " " + args[0] + "\r\n").c_str()); // phải có \r\n ở cuối
+			else send(sd, (server_commands[cmd] + "\r\n").c_str());
+			
+			char* srecv = recv(sd, buff);
+            cout << srecv; // sau khi gửi xong thì nhận phản hồi và in ra stdout
+			
+			int grc = get_return_code(srecv);
+			if (grc > 500 && grc < 600) continue;
+			
             if (cmd == "bye" || cmd == "quit") { // lệnh thoát
                 break;
             }
@@ -150,12 +155,137 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
                     cout << recv(sd, buff);
                 }
                 else if (cmd == "get") {
-                    // ...
+					char f[MAX_BUFF];
+					memset(f, 0, MAX_BUFF);
+					int cnt = 0;
+					recv(data_sd, f, &cnt);
+					int file_desc = open(args[0].c_str(), O_CREAT | O_EXCL | O_WRONLY, 0666);
+					write(file_desc, f, cnt);
+					close(file_desc);
+					cout << recv(sd, buff);
                 }
                 else if (cmd == "put") {
-                    // ...
+                    int file_desc = open(args[0].c_str(), O_RDONLY);
+					if (file_desc == -1) cout << "No such file on the local directory\n";
+					else
+					{
+						struct stat obj;
+						stat(args[0].c_str(), &obj);
+						int size = obj.st_size;
+						char f[MAX_BUFF];
+						memset(f, 0, MAX_BUFF);
+						read(file_desc, f, size);
+						write(data_sd, f, size);
+						close(file_desc);
+						close(data_sd);
+						close(client_sd);
+						cout << recv(sd, buff);
+					}
                 }
-                // else if(...)
+                else if (cmd == "mget") {
+					char f[MAX_BUFF];
+					memset(f, 0, MAX_BUFF);
+					int cnt = 0;
+					recv(data_sd, f, &cnt);
+					int file_desc = open(args[0].c_str(), O_CREAT | O_EXCL | O_WRONLY, 0666);
+					write(file_desc, f, cnt);
+					close(file_desc);
+					cout << recv(sd, buff);
+					for (int i = 1; i < args.size(); i++)
+					{
+						//đóng socket trao đổi dữ liệu trước đó
+						close(data_sd);
+						close(client_sd);
+						
+						//tạo lại socket trao đổi dữ liệu
+						client_sd = establish_data_socket(sd, cur_mode);
+						
+						//gửi command
+						send(sd, (server_commands[cmd] +  " " + args[i] + "\r\n").c_str());
+						
+						//nhận phản hồi
+						srecv = recv(sd, buff);
+						cout << srecv;
+						
+						//tạo tiếp socket trao đổi dữ liệu, phải tạo 2 lần như vậy vì chế độ passive và active tạo hơi khác nhau.
+						if (cur_mode == ACTIVE) {
+						sockaddr_in addr;
+						socklen_t len = sizeof(addr);
+						data_sd = accept(client_sd, (sockaddr*)&addr, &len);
+						}
+						else {
+							data_sd = client_sd;
+						}
+						
+						//nhận dữ liệu
+						memset(f, 0, MAX_BUFF);
+						cnt = 0;
+						recv(data_sd, f, &cnt);
+						file_desc = open(args[i].c_str(), O_CREAT | O_EXCL | O_WRONLY, 0666);
+						write(file_desc, f, cnt);
+						close(file_desc);
+						cout << recv(sd, buff);
+					}
+				}
+				else if (cmd == "mput") {
+					int file_desc = open(args[0].c_str(), O_RDONLY);
+					if (file_desc == -1) cout << "No such file on the local directory\n";
+					else
+					{
+						struct stat obj;
+						stat(args[0].c_str(), &obj);
+						int size = obj.st_size;
+						char f[MAX_BUFF];
+						memset(f, 0, MAX_BUFF);
+						read(file_desc, f, size);
+						write(data_sd, f, size);
+						close(file_desc);
+						close(data_sd);
+						close(client_sd);
+						cout << recv(sd, buff);
+					}
+					for (int i = 1; i < args.size(); i++)
+					{
+						
+						//tạo lại socket trao đổi dữ liệu
+						client_sd = establish_data_socket(sd, cur_mode);
+						
+						//gửi command
+						send(sd, (server_commands[cmd] +  " " + args[i] + "\r\n").c_str());
+						
+						//nhận phản hồi
+						srecv = recv(sd, buff);
+						cout << srecv;
+						
+						//tạo tiếp socket trao đổi dữ liệu, phải tạo 2 lần như vậy vì chế độ passive và active tạo hơi khác nhau.
+						if (cur_mode == ACTIVE) {
+						sockaddr_in addr;
+						socklen_t len = sizeof(addr);
+						data_sd = accept(client_sd, (sockaddr*)&addr, &len);
+						}
+						else {
+							data_sd = client_sd;
+						}
+						
+						//nhận dữ liệu
+						int file_desc = open(args[i].c_str(), O_RDONLY);
+						if (file_desc == -1) cout << "No such file on the local directory\n";
+						else
+						{
+							struct stat obj;
+							stat(args[i].c_str(), &obj);
+							int size = obj.st_size;
+							char f[MAX_BUFF];
+							memset(f, 0, MAX_BUFF);
+							read(file_desc, f, size);
+							write(data_sd, f, size);
+							close(file_desc);
+							close(data_sd);
+							close(client_sd);
+							cout << recv(sd, buff);
+						}
+					}
+				}
 
                 // đóng socket. phải đóng vì 2 cái này tạo mới mỗi lần gửi/nhận data
                 close(data_sd);
