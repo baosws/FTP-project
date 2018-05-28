@@ -26,7 +26,6 @@ std::map<std::string, std::string> server_commands =
 {{"ls", "NLST"},
 {"dir", "LIST"},
 {"cd", "CWD"},
-{"passive", "PASV"},
 {"get", "RETR"},
 {"pwd", "PWD"},
 {"bye", "QUIT"},
