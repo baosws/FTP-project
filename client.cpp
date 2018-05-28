@@ -126,9 +126,15 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
                 client_sd = establish_data_socket(sd, cur_mode);
             }
             // sau đó gửi command sau khi đã được dịch thành lệnh chuẩn lên server, ví dụ: ls -> NLST, dir -> LIST, get -> RETR, put -> STOR,... chuyển cái này dùng map server_commands<string, string>
-            if (args[0] != "") send(sd, (server_commands[cmd] +  " " + args[0] + "\r\n").c_str()); // phải có \r\n ở cuối
+            if (args.size() != 0) send(sd, (server_commands[cmd] +  " " + args[0] + "\r\n").c_str()); // phải có \r\n ở cuối
 			else send(sd, (server_commands[cmd] + "\r\n").c_str());
-            cout << recv(sd, buff); // sau khi gửi xong thì nhận phản hồi và in ra stdout
+			
+			char* srecv = recv(sd, buff);
+            cout << srecv; // sau khi gửi xong thì nhận phản hồi và in ra stdout
+			
+			int grc = get_return_code(srecv);
+			if (grc > 500 && grc < 600) continue;
+			
             if (cmd == "bye" || cmd == "quit") { // lệnh thoát
                 break;
             }
@@ -150,7 +156,6 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
                 }
                 else if (cmd == "get") {
 					char f[MAX_BUFF];
-					//send(sd, (server_commands[cmd] +  " " + args[0] + "\r\n").c_str());
 					recv(data_sd, f);
 					int file_desc = open(args[0].c_str(), O_CREAT | O_EXCL | O_WRONLY, 0666);
 					write(file_desc, f, strlen(f));
@@ -158,7 +163,16 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
 					cout << recv(sd, buff);
                 }
                 else if (cmd == "put") {
-                    // ...
+                    int file_desc = open(args[0].c_str(), O_RDONLY);
+					if (file_desc == -1) cout << "No such file on the local directory\n";
+					else
+					{
+						struct stat obj;
+						stat(args[0].c_str(), &obj);
+						int size = obj.st_size;
+						sendfile(data_sd, file_desc, NULL, size);
+						cout << recv(sd, buff);
+					}
                 }
                 // else if(...)
 
