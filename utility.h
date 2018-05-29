@@ -25,61 +25,12 @@
 //#include <sys/sendfile.h>
 
 #define MAX_BUFF (1 << 18)
-
-std::map<std::string, std::string> server_commands =
-{{"ls", "NLST"},
-{"dir", "LIST"},
-{"cd", "CWD"},
-{"get", "RETR"},
-{"mget", "RETR"},
-{"put", "STOR"},
-{"mput", "STOR"},
-{"pwd", "PWD"},
-{"bye", "QUIT"},
-{"quit", "QUIT"}
-};
-std::set<std::string> data_commands = {"ls", "dir", "get", "put", "mget", "mput"};
 // utils functions
-int send(int sd, const char* msg) {
-    return write(sd, msg, strlen(msg));
-}
-char* recv(int sd, char* buff, int* cnt = NULL, int len = MAX_BUFF) {
-    memset(buff, 0, len);
-    if (cnt != NULL) {
-        *cnt = read(sd, buff, len);
-    }
-    else {
-        read(sd, buff, len);
-    }
-    return buff;
-}
-
-char* inet_ntoa(unsigned int ip) {
-    in_addr tmp;
-    tmp.s_addr = ip;
-    return inet_ntoa(tmp);
-}
-
-int get_return_code(char* msg) {
-    int res;
-    sscanf(msg, "%d", &res);
-    return res;
-}
-
-void readline(char* buff, int len = MAX_BUFF, FILE* stream = stdin) {
-    memset(buff, 0, len);
-    fgets(buff, len, stream);
-    int n = strlen(buff);
-    while (buff[n - 1] == '\r' || buff[n - 1] == '\n')
-        buff[--n] = 0;
-}
-
-std::vector<std::string> parse_args(char const* args) {
-    std::stringstream ss;
-    ss << args;
-    std::vector<std::string> res;
-    for (std::string s; ss >> s;) {
-        res.push_back(s);
-    }
-    return res;
-}
+int send(int sd, std::string msg);
+char* recv(int sd, char* buff, int* cnt = NULL, int len = MAX_BUFF);
+char* inet_ntoa(unsigned int ip);
+int get_return_code(char* msg);
+void readline(char* buff, int len = MAX_BUFF, FILE* stream = stdin);
+std::vector<std::string> parse_args(char const* args);
+int accept(int sd);
+std::string join(const std::vector<std::string>& v, const std::string& sep = "");

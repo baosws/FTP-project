@@ -209,9 +209,7 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
 						
 						//tạo tiếp socket trao đổi dữ liệu, phải tạo 2 lần như vậy vì chế độ passive và active tạo hơi khác nhau.
 						if (cur_mode == ACTIVE) {
-						sockaddr_in addr;
-						socklen_t len = sizeof(addr);
-						data_sd = accept(client_sd, (sockaddr*)&addr, &len);
+						    data_sd = accept(data_sd);
 						}
 						else {
 							data_sd = client_sd;
