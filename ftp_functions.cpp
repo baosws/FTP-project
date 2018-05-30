@@ -98,7 +98,7 @@ int create_data_socket(int sd, int mode) {
 }
 
 /* ------------------------------------------------- */
-void func_passive(int& mode) {
+void ftp_passive(int& mode) {
     if (mode == PASSIVE) {
         cout << "Passive mode is off.\n";
         mode = ACTIVE;
@@ -108,7 +108,7 @@ void func_passive(int& mode) {
         mode = PASSIVE;
     }
 }
-void func_ls(int sd, int mode, string args = "") {
+void ftp_ls(int sd, int mode, const string& args = "") {
     int client_sd = create_data_socket(sd, mode), data_sd = client_sd;
     send(sd, "NLST " + args + "\r\n");
     
@@ -122,7 +122,7 @@ void func_ls(int sd, int mode, string args = "") {
     close(client_sd);
     close(data_sd);
 }
-void func_dir(int sd, int mode, string args = "") {
+void ftp_dir(int sd, int mode, const string& args = "") {
     int client_sd = create_data_socket(sd, mode), data_sd = client_sd;
     send(sd, "LIST " + args + "\r\n");
     
@@ -136,17 +136,17 @@ void func_dir(int sd, int mode, string args = "") {
     close(client_sd);
     close(data_sd);
 }
-void func_cd(int sd, string dir) {
+void ftp_cd(int sd, const string& dir) {
     char buff[MAX_BUFF];
     send(sd, "CWD " + dir + "\r\n");
     cout << recv(sd, buff);
 }
-void func_pwd(int sd) {
+void ftp_pwd(int sd) {
     char buff[MAX_BUFF];
     send(sd, "PWD\r\n");
     cout << recv(sd, buff);
 }
-void func_get(int sd, int mode, string filename) {
+void ftp_get(int sd, int mode, const string& filename) {
     int client_sd = create_data_socket(sd, mode), data_sd = client_sd;
     send(sd, "RETR " + filename + "\r\n");
     
@@ -168,12 +168,12 @@ void func_get(int sd, int mode, string filename) {
     close(client_sd);
     close(data_sd);
 }
-void func_mget(int sd, int mode, vector<string> filenames) {
-    for (string& filename : filenames) {
-        func_get(sd, mode, filename);
+void ftp_mget(int sd, int mode, const vector<string>& filenames) {
+    for (const string& filename : filenames) {
+        ftp_get(sd, mode, filename);
     }
 }
-void func_put(int sd, int mode, string filename) {
+void ftp_put(int sd, int mode, const string& filename) {
     int client_sd = create_data_socket(sd, mode), data_sd = client_sd;
     send(sd, "STOR " + filename + "\r\n");
     
@@ -200,12 +200,46 @@ void func_put(int sd, int mode, string filename) {
     close(client_sd);
     cout << recv(sd, buff);
 }
-void func_mput(int sd, int mode, vector<string> filenames) {
-    for (string& filename : filenames) {
-        func_put(sd, mode, filename);
+void ftp_mput(int sd, int mode, const vector<string>& filenames) {
+    for (const string& filename : filenames) {
+        ftp_put(sd, mode, filename);
     }
 }
-void func_quit(int sd) {
+void ftp_delete(int sd, const string& filename) {
+    char buff[MAX_BUFF];
+    send(sd, "DELE " + filename + "\r\n");
+    cout << recv(sd, buff);
+}
+void ftp_mkdir(int sd, const string& dir) {
+    char buff[MAX_BUFF];
+    send(sd, "MKD " + dir + "\r\n");
+    cout << recv(sd, buff);
+}
+void ftp_rmdir(int sd, const string& dir) {
+    char buff[MAX_BUFF];
+    send(sd, "RMD " + dir + "\r\n");
+    cout << recv(sd, buff);
+}
+void ftp_lcd(const string& dir) {
+    if (chdir(dir.c_str()) == 0) {
+        char buff[MAX_BUFF];
+        cout << "Local directory now " << getcwd(buff, MAX_BUFF) << endl;
+    }
+    else {
+        cout << "local: " << dir << ": No such file or directory\n";
+    }
+}
+void ftp_mdelete(int sd, const vector<string>& filenames) {
+    for (const string& filename : filenames) {
+        string answer;
+        cout << "mdelete " << filename << "? ";
+        cin >> answer;
+        if (answer != "n" && answer != "N") {
+            ftp_delete(sd, filename);
+        }
+    }
+}
+void ftp_quit(int sd) {
     char buff[MAX_BUFF];
     send(sd, "QUIT\r\n");
     cout << recv(sd, buff);

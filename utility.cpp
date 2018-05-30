@@ -52,7 +52,10 @@ int accept(int sd) {
 }
 std::string join(const std::vector<std::string>& v, const std::string& sep) {
     std::string res;
-    for (int i = 0; i + 1 < (int)v.size(); ++i)
-        res += v[i] + sep;
-    return res + v.back();
+    if (v.size()) {
+        for (int i = 0; i + 1 < (int)v.size(); ++i)
+            res += v[i] + sep;
+        res += v.back();
+    }
+    return res;
 }

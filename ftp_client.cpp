@@ -12,26 +12,35 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
         readline(buff);
         vector<string> args = parse_args(buff); // tách chuỗi tham số ra thành vector các tham số: "abc.txt def.cpp ghi.xyz" -> {"abc.txt", "def.cpp", "ghi.xyz"} 
         if (cmd == "passive")
-            func_passive(mode);
+            ftp_passive(mode);
         else if (cmd == "ls")
-            func_ls(sd, mode, join(args));
+            ftp_ls(sd, mode, join(args));
         else if (cmd == "dir")
-            func_dir(sd, mode, join(args));
+            ftp_dir(sd, mode, join(args));
         else if (cmd == "cd")
-            func_cd(sd, args[0]);
+            ftp_cd(sd, args[0]);
         else if (cmd == "get")
-            func_get(sd, mode, args[0]);
+            ftp_get(sd, mode, args[0]);
         else if (cmd == "mget")
-            func_mget(sd, mode, args);
+            ftp_mget(sd, mode, args);
         else if (cmd == "put")
-            func_put(sd, mode, args[0]);
+            ftp_put(sd, mode, args[0]);
         else if (cmd == "mput")
-            func_mput(sd, mode, args);
+            ftp_mput(sd, mode, args);
         else if (cmd == "pwd")
-            func_pwd(sd);
-        // else if (...)
+            ftp_pwd(sd);
+        else if (cmd  == "delete")
+            ftp_delete(sd, args[0]);
+        else if (cmd == "mdelete")
+            ftp_mdelete(sd, args);
+        else if (cmd == "mkdir")
+            ftp_mkdir(sd, args[0]);
+        else if (cmd == "rmdir")
+            ftp_rmdir(sd, args[0]);
+        else if (cmd == "lcd")
+            ftp_lcd(args[0]);
         else if (cmd == "bye" || cmd == "quit") {
-            func_quit(sd);
+            ftp_quit(sd);
             break;
         }
     }
@@ -59,7 +68,7 @@ int main(int nargs, char* args[]) {
         
         process(server_sd);
     }
-    catch (string ex) {
-        cerr << "Err: " << ex << endl;
+    catch (exception ex) {
+        cerr << "Err: " << ex.what() << endl;
     }
 }
