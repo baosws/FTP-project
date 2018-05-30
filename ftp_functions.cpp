@@ -170,7 +170,13 @@ void ftp_get(int sd, int mode, const string& filename) {
 }
 void ftp_mget(int sd, int mode, const vector<string>& filenames) {
     for (const string& filename : filenames) {
-        ftp_get(sd, mode, filename);
+        string answer;
+        cout << "mget " << filename << "? ";
+        getline(cin,answer);
+        if (answer != "n" && answer != "N") {
+            ftp_get(sd, mode, filename);
+        }
+        
     }
 }
 void ftp_put(int sd, int mode, const string& filename) {
@@ -202,7 +208,12 @@ void ftp_put(int sd, int mode, const string& filename) {
 }
 void ftp_mput(int sd, int mode, const vector<string>& filenames) {
     for (const string& filename : filenames) {
-        ftp_put(sd, mode, filename);
+        string answer;
+        cout << "mput " << filename << "? ";
+        getline(cin,answer);
+        if (answer != "n" && answer != "N") {
+            ftp_put(sd, mode, filename);
+        }
     }
 }
 void ftp_delete(int sd, const string& filename) {
@@ -221,11 +232,7 @@ void ftp_rmdir(int sd, const string& dir) {
     cout << recv(sd, buff);
 }
 void ftp_lcd(const string& dir) {
-    if (chdir(dir.c_str()) == 0) {
-        char buff[MAX_BUFF];
-        cout << "Local directory now " << getcwd(buff, MAX_BUFF) << endl;
-    }
-    else {
+    if (chdir(dir.c_str()) != 0)  {
         cout << "local: " << dir << ": No such file or directory\n";
     }
 }
@@ -233,7 +240,7 @@ void ftp_mdelete(int sd, const vector<string>& filenames) {
     for (const string& filename : filenames) {
         string answer;
         cout << "mdelete " << filename << "? ";
-        cin >> answer;
+        getline(cin,answer);
         if (answer != "n" && answer != "N") {
             ftp_delete(sd, filename);
         }
