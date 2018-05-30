@@ -152,6 +152,9 @@ void ftp_get(int sd, int mode, const string& filename) {
     
     char buff[MAX_BUFF];
     cout << recv(sd, buff);
+    if (get_return_code(buff) != 150) {
+        return;
+    }
 
     if (mode == ACTIVE) {
         data_sd = accept(client_sd);
@@ -180,12 +183,17 @@ void ftp_put(int sd, int mode, const string& filename) {
     char buff[MAX_BUFF];
     cout << recv(sd, buff);
 
+    if (get_return_code(buff) != 150) {
+        return;
+    }
     if (mode == ACTIVE) {
         data_sd = accept(client_sd);
     }
     
     int file_desc = open(filename.c_str(), O_RDONLY);
     if (file_desc == -1) {
+        close(data_sd);
+        close(client_sd);
         throw string("No such file on the local directory\n");
     }
     struct stat obj;
