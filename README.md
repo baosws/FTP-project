@@ -1,11 +1,10 @@
 # FTP-project
 
 ## Compile:
-g++ -std=c++11 utility.cpp ftp_functions.cpp ftp_client.cpp -o client
+make
 
 ## Run:
-./client 192.123.456.789
+./ftp 127.0.0.1
 
 ## For short:
-g++ -std=c++11 utility.cpp ftp_functions.cpp ftp_client.cpp -o client
- && ./client 192.123.456.789
+make && ./ftp 127.0.0.1
