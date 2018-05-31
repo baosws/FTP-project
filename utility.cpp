@@ -1,8 +1,9 @@
 #include "utility.h"
+using namespace std;
 
 #define MAX_BUFF (1 << 18)
 // utils functions
-int send(int sd, std::string msg) {
+int send(int sd, string msg) {
     return write(sd, msg.c_str(), msg.length());
 }
 char* recv(int sd, char* buff, int* cnt, int len) {
@@ -36,12 +37,41 @@ void readline(char* buff, int len, FILE* stream) {
         buff[--n] = 0;
 }
 
-std::vector<std::string> parse_args(char const* args) {
-    std::stringstream ss;
-    ss << args;
-    std::vector<std::string> res;
-    for (std::string s; ss >> s;) {
-        res.push_back(s);
+vector<string> parse_args(const string& args) {
+    string cur;
+    vector<string> res;
+    for (int i = 0, in_token = 0; i < (int)args.length(); ++i) {
+        if (args[i] == ' ') {
+            if (in_token) {
+                cur += ' ';
+            }
+            else {
+                if (cur != "") {
+                    res.push_back(cur);
+                    cur = "";
+                }
+            }
+        }
+        else {
+            if (args[i] == '\"') {
+                if (in_token) {
+                    if (cur != "") {
+                        res.push_back(cur);
+                        cur = "";
+                    }
+                    in_token = 0;
+                }
+                else {
+                    in_token = 1;
+                }
+            }
+            else {
+                cur += args[i];
+            }
+        }
+    }
+    if (cur != "") {
+        res.push_back(cur);
     }
     return res;
 }
@@ -50,8 +80,8 @@ int accept(int sd) {
     socklen_t len = sizeof(addr);
     return accept(sd, (sockaddr*)&addr, &len);
 }
-std::string join(const std::vector<std::string>& v, const std::string& sep) {
-    std::string res;
+string join(const vector<string>& v, const string& sep) {
+    string res;
     if (v.size()) {
         for (int i = 0; i + 1 < (int)v.size(); ++i)
             res += v[i] + sep;

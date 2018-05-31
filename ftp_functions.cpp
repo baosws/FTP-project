@@ -201,8 +201,6 @@ void ftp_put(int sd, int mode, const string& filename) {
     
     int file_desc = open(filename.c_str(), O_RDONLY);
     if (file_desc == -1) {
-        close(data_sd);
-        close(client_sd);
         throw string("No such file on the local directory\n");
     }
     while (1) {
