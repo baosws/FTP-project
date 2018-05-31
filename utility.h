@@ -22,7 +22,6 @@
 #include <fcntl.h>
 #include <sys/uio.h>
 #include <sys/stat.h>
-//#include <sys/sendfile.h>
 
 #define MAX_BUFF (1 << 18)
 // utils functions

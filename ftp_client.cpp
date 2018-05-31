@@ -1,5 +1,6 @@
 #include "ftp_functions.h"
 using namespace std;
+extern string PWD;
 
 // Input tham số
 void input_args(std::vector<string>& args) {
@@ -31,7 +32,6 @@ bool input_args_prompt(const string& arg_prompt, const string& usage_prompt, std
     return have_arg;  
 }
 void process(int sd) { // sd là socket để gửi lệnh và nhận phản hồi
-    char buff[MAX_BUFF];
     int mode = ACTIVE;
     while (1) {
         try {
@@ -147,6 +147,8 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
 }
 
 int main(int nargs, char* args[]) {
+    char buff[MAX_BUFF];
+    PWD = getcwd(buff, MAX_BUFF);
     try {
         if (nargs < 2) {
             throw string("Server missing");
@@ -154,7 +156,6 @@ int main(int nargs, char* args[]) {
         
         int server_sd = connect_server(inet_addr(args[1]), 21);
         cout << "Connected to " << args[1] << endl;
-        char buff[MAX_BUFF];
         cout << recv(server_sd, buff);
         
         if (get_return_code(buff) != 220) {

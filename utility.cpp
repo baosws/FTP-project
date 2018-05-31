@@ -1,5 +1,6 @@
 #include "utility.h"
 using namespace std;
+string PWD;
 
 #define MAX_BUFF (1 << 18)
 // utils functions
@@ -36,7 +37,7 @@ void readline(char* buff, int len, FILE* stream) {
         buff[--n] = 0;
 }
 vector<string> parse_args(const string& args) {
-    FILE* pipe = popen(("./args_parser " + args).c_str(), "r");
+    FILE* pipe = popen((PWD + "/args_parser " + args).c_str(), "r");
     int n;
     fscanf(pipe, "%d\n", &n);
     char buff[MAX_BUFF];
