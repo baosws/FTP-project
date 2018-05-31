@@ -6,3 +6,7 @@ ftp_functions.o: utility.o ftp_functions.cpp ftp_functions.h
 	g++ -c ftp_functions.cpp -std=c++11
 utility.o: utility.cpp utility.h
 	g++ -c utility.cpp -std=c++11
+args_parser: args_parser.o
+	g++ -o args_parser args_parser.o -std=c++11
+args_parser.o:
+	g++ -c args_parser.cpp -std=c++11

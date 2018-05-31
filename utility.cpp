@@ -28,7 +28,6 @@ int get_return_code(char* msg) {
     sscanf(msg, "%d", &res);
     return res;
 }
-
 void readline(char* buff, int len, FILE* stream) {
     memset(buff, 0, len);
     fgets(buff, len, stream);
@@ -36,43 +35,18 @@ void readline(char* buff, int len, FILE* stream) {
     while (buff[n - 1] == '\r' || buff[n - 1] == '\n')
         buff[--n] = 0;
 }
-
 vector<string> parse_args(const string& args) {
-    string cur;
+    FILE* pipe = popen(("./args_parser " + args).c_str(), "r");
+    int n;
+    fscanf(pipe, "%d\n", &n);
+    char buff[MAX_BUFF];
     vector<string> res;
-    for (int i = 0, in_token = 0; i < (int)args.length(); ++i) {
-        if (args[i] == ' ') {
-            if (in_token) {
-                cur += ' ';
-            }
-            else {
-                if (cur != "") {
-                    res.push_back(cur);
-                    cur = "";
-                }
-            }
-        }
-        else {
-            if (args[i] == '\"') {
-                if (in_token) {
-                    if (cur != "") {
-                        res.push_back(cur);
-                        cur = "";
-                    }
-                    in_token = 0;
-                }
-                else {
-                    in_token = 1;
-                }
-            }
-            else {
-                cur += args[i];
-            }
-        }
+    for (int i = 0; i < n; ++i) {
+        readline(buff, MAX_BUFF, pipe);
+        cout << buff << endl;
+        res.emplace_back(buff);
     }
-    if (cur != "") {
-        res.push_back(cur);
-    }
+    fclose(pipe);
     return res;
 }
 int accept(int sd) {
