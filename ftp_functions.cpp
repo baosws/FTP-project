@@ -159,12 +159,15 @@ void ftp_get(int sd, int mode, const string& filename) {
     if (mode == ACTIVE) {
         data_sd = accept(client_sd);
     }
+    int file_desc = open(filename.c_str(), O_CREAT | O_WRONLY, 0666);
+    while (1) {
+        memset(buff, 0, MAX_BUFF);
+        int cnt = read(data_sd, buff, MAX_BUFF);
+        if (cnt <= 0)
+            break;
+        write(file_desc, buff, cnt);
+    }
     
-    memset(buff, 0, MAX_BUFF);
-    int cnt = read(data_sd, buff, MAX_BUFF);
-    int file_desc = open(filename.c_str(), O_CREAT | O_EXCL | O_WRONLY, 0666);
-    
-    write(file_desc, buff, cnt);
     close(file_desc);
     cout << recv(sd, buff);
 
@@ -202,12 +205,13 @@ void ftp_put(int sd, int mode, const string& filename) {
         close(client_sd);
         throw string("No such file on the local directory\n");
     }
-    struct stat obj;
-    stat(filename.c_str(), &obj);
-    int size = obj.st_size;
-    memset(buff, 0, MAX_BUFF);
-    read(file_desc, buff, size);
-    write(data_sd, buff, size);
+    while (1) {
+        memset(buff, 0, MAX_BUFF);
+        int cnt = read(file_desc, buff, MAX_BUFF);
+        if (cnt <= 0)
+            break;
+        write(data_sd, buff, cnt);
+    }
     
     close(file_desc);
     close(data_sd);
