@@ -32,4 +32,4 @@ int get_return_code(char* msg);
 void readline(char* buff, int len = MAX_BUFF, FILE* stream = stdin);
 std::vector<std::string> parse_args(const std::string& args);
 int accept(int sd);
-std::string join(const std::vector<std::string>& v, const std::string& sep = "");
+std::string join(const std::vector<std::string>& v, const std::string& sep = " ");

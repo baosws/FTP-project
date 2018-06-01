@@ -44,7 +44,6 @@ vector<string> parse_args(const string& args) {
     vector<string> res;
     for (int i = 0; i < n; ++i) {
         readline(buff, MAX_BUFF, pipe);
-        cout << buff << endl;
         res.emplace_back(buff);
     }
     fclose(pipe);

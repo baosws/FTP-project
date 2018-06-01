@@ -141,7 +141,7 @@ void process(int sd) { // sd là socket để gửi lệnh và nhận phản h�
             }
         }
         catch (string ex) {
-            cout << "Error: " << ex << endl;
+//             cout << "Error: " << ex << endl;
         }
     }
 }
